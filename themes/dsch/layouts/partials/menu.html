@@ -23,10 +23,10 @@ Renders a menu for the given menu ID.
     {{- $link_attrs := dict }}
     {{- if $page.IsMenuCurrent .Menu . }}
       {{- $link_attrs = (dict "class" "nav-item active" "aria-current" "page") }}
-    {{- else if $page.HasMenuCurrent .Menu .}}
+    {{- else if index $attrs "href" }}
       {{- $link_attrs = (dict "class" "nav-item") }}
     {{- else }}
-      {{- $link_attrs = (dict "class" "nav-item") }}      
+      {{- $link_attrs = (dict "class" "nav-item disabled") }}      
     {{- end }}
     {{- $name := .Name }}
     {{- with .Identifier }}
