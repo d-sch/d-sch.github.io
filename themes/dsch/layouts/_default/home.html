@@ -1,7 +1,21 @@
 {{ define "main" }}
-  {{ .Content }}
-  {{ range site.RegularPages }}
-    <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
-    {{ .Summary }}
-  {{ end }}
+  <div class="container-sm">
+    {{ .Content }}
+    <ol class="list-group list-group-flush">
+      {{ range site.RegularPages }}
+      <li class="list-group-item">
+        <div class="d-flex justify-content-between align-items-start">
+        <h2><a href="{{ .RelPermalink }}">
+          {{ .LinkTitle }} 
+        </a></h2>
+        <span><em>{{ .Date | time.Format ":date_medium" }}</em></span>
+
+      </div>        
+          
+          {{ .Summary }}
+
+      </li>
+    {{ end }}
+    </ol>
+  </div>
 {{ end }}

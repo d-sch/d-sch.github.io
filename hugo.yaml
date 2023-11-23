@@ -4,5 +4,9 @@ title: d-sch pages
 theme: dsch
 module:
   mounts:
-    source: node_modules/bootstrap/dist/js/bootstrap.bundle.min.js
-    target: assets/js/bootstrap.bundle.min.js
+    - source: content
+      target: content
+    - source: node_modules/bootstrap/dist/js/bootstrap.bundle.js
+      target: assets/js/bootstrap.bundle.js
+
+_merge: shallow

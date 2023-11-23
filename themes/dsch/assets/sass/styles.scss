@@ -5,3 +5,33 @@
 .nav-item.disabled {
     font-weight: lighter;
 }
+
+.blockqoute {
+    border-left: 10px solid #8080FF;
+    text-indent: -0.45em;
+    margin-left: 40px;
+    quotes: "„" "“" "‚" "‘";
+
+    &::before {
+        content: open-quote;
+    }
+
+    &::after {
+        content: close-quote;
+    }
+}
+
+.blockqoute-footer {
+    border-left: 3px solid #ffffff;
+    text-indent: -0.45em;
+    margin-left: 40px;
+    quotes: "„" "“" "‚" "‘";
+
+    &::before {
+        content: open-quote;
+    }
+
+    &::after {
+        content: close-quote;
+    }
+}
