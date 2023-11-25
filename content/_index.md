@@ -5,8 +5,9 @@ title: Home
 menu: Home
 ---
 
-```
-<p>Hello World!</p>
+
+```html
+<p> Hello World!</p>
 ```
 
 Welcome to my Github pages.  

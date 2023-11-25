@@ -10,3 +10,8 @@ module:
       target: assets/js/bootstrap.bundle.js
 
 _merge: shallow
+markup:
+  goldmark:
+    parser:
+      attribute:
+        block: true
