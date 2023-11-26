@@ -8,21 +8,30 @@
 
 .blockqoute {
     border-left: 10px solid #8080FF;
-    text-indent: -0.45em;
-    margin-left: 40px;
-    quotes: "„" "“" "‚" "‘";
+    quotes: "“" "“" "‘ " "‘";
 
     &::before {
+        font-size: 2em;
         content: open-quote;
     }
 
     &::after {
+        font-size: 2em;
         content: close-quote;
+    }
+
+    & > * {
+        margin-left: 10px;
+    }
+
+    & > p {    
+        text-indent: -0.50em;
+        font-style: italic;
     }
 }
 
 .blockqoute-footer {
-    border-left: 3px solid #ffffff;
+    border-left: 10px solid #dddddd;
     text-indent: -0.45em;
     margin-left: 40px;
     quotes: "„" "“" "‚" "‘";
