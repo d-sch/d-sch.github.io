@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+<head>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>Enable multiple R2DBC database connection factories | d-sch pages</title>
+
+
+
+      <link rel="stylesheet" href="/css/styles.min.min.43fbebcb56c1a702e96f299a38e848f2e5c6bf73319adb034f737cd9d63cac48.css" integrity="sha256-Q/vry1bBpwLpbymaOOhI8uXGv3MxmtsDT3N82dY8rEg=" crossorigin="anonymous">
+
+
+      <script src="/js/main.23cd0c7d837263b9eaeb96ee2d9ccfa2969daa3fa00fa1c1fe8701a9b87251a1.js" integrity="sha256-I80MfYNyY7nq65buLZzPopadqj&#43;gD6HB/ocBqbhyUaE=" crossorigin="anonymous"></script>
+
+
+</head>
+<body>
+  <header >
+    <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-light bg-primary">
+    <a class="navbar-brand">
+    <h1 class="display-1">d-sch pages</h1>
+    </a>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        
+    <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+    <li class="nav-item">
+      <a class="nav-link" href="/">Home
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/news/">News
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/posts/">Blog
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/tags/">Tags
+      </a>
+    </li>
+    </ul>
+
+    </div>
+    </nav>
+</div>
+  </header>
+  <main>
+    <div class="container-sm">
+      
+  <div>
+  <h1>Enable multiple R2DBC database connection factories</h1>
+
+  
+  
+  <time datetime="2023-11-26T00:00:00&#43;00:00">November 26, 2023</time>
+  <div>
+  <p>Migrating an existing project to Spring WebFlux requires quite some effort.
+You have to touch the entire configurations.
+If you work incrementally you will find most parts of an WebFlux application are implemented fast and easy.
+But if you dig deeper into the application requirements things can become interesting.</p>
+<p>While working on the database access layer and migrating from JDBC to R2DBC I found one of this interesting challenges.</p>
+<p>Starting small and followed first the documentation.</p>
+<p>From the reference documentation: (<a href="https://docs.spring.io/spring-boot/docs/current/reference/html/data.html#data.sql.r2dbc">https://docs.spring.io/spring-boot/docs/current/reference/html/data.html#data.sql.r2dbc</a>)</p>
+<blockquote class="blockqoute"><p><code>ConnectionFactory</code> configuration is controlled by external configuration properties in <code>spring.r2dbc.*</code>.
+For example, you might declare the following section in <code>application.properties</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">spring</span>:
+</span></span><span style="display:flex;"><span> <span style="color:#f92672">r2dbc</span>:
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">url</span>: <span style="color:#e6db74">&#34;r2dbc:postgresql://localhost/test&#34;</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">username</span>: <span style="color:#e6db74">&#34;dbuser&#34;</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">password</span>: <span style="color:#e6db74">&#34;dbpass&#34;</span>
+</span></span></code></pre></div></blockquote>
+<p>The refactoring from JDBC to R2DBC for the first database connection was done easily:</p>
+<ul>
+<li>adding the R2DBC config to the application.yaml file</li>
+<li>create repository interface for entity class</li>
+<li>Adding the <code>@EnableR2dbcRepositories</code> annotation to the application class</li>
+<li>using the default repository methods for lookup by id</li>
+<li>adding <code>@query</code> annotations using complex SQL queries</li>
+</ul>
+<p>But after that there was a big question mark how to add a second connection.</p>
+<p>This information is not available in the Spring Boot documentation.
+You have to go to the Spring Data R2DBC documentation.
+There you are told that you</p>
+<blockquote class="blockqoute"><p><strong>&hellip;need to define a few beans yourself to configure Spring Data R2DBC to work with multiple databases.</strong></p>
+</blockquote>
+<p><em><strong>Please note that I use the current version Spring Data is 2.0 (as of November 2023) as reference.</strong></em></p>
+<h2 id="multiple-connection-properties">Multiple Connection Properties</h2>
+<p>Multiple connection properties from the application properties is currently not supported out the box by Spring Boot.</p>
+<p><a href="https://docs.spring.io/spring-boot/docs/3.2.0/api/org/springframework/boot/autoconfigure/r2dbc/R2dbcProperties.html">https://docs.spring.io/spring-boot/docs/3.2.0/api/org/springframework/boot/autoconfigure/r2dbc/R2dbcProperties.html</a>
+These are the default <code>@ConfigurationProperties</code> used by the Spring Boot auto configuration.</p>
+<p>Based on this class I generated a new custom <code>@ConfigurationProperties</code> class.
+This simply expects a keyed set of <code>import org.springframework.boot.autoconfigure.r2dbc.R2dbcProperties.R2dbcProperties</code> in the application configuration.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@ConfigurationProperties</span>(prefix <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;r2dbc&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@RequiredArgsConstructor</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">R2DBCConfigurationProperties</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Getter</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Setter</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> Map<span style="color:#f92672">&lt;</span>String, R2dbcProperties<span style="color:#f92672">&gt;</span> options;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> ConnectionFactoryOptions.<span style="color:#a6e22e">Builder</span> <span style="color:#a6e22e">buildConnectionFactoryOptions</span>(R2dbcProperties r2dbcProperties) {
+</span></span><span style="display:flex;"><span>		ConnectionFactoryOptions urlOptions <span style="color:#f92672">=</span> ConnectionFactoryOptions.<span style="color:#a6e22e">parse</span>(r2dbcProperties.<span style="color:#a6e22e">getUrl</span>());
+</span></span><span style="display:flex;"><span>		ConnectionFactoryOptions.<span style="color:#a6e22e">Builder</span> optionsBuilder <span style="color:#f92672">=</span> urlOptions.<span style="color:#a6e22e">mutate</span>();
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">//...</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> optionsBuilder;    
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>This way you can now specify multiple R2DBC connections properties in the <code>application.yaml</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">r2dbc</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">connection1</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">url:r2dbc:h2:mem:///demo</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">username:conn</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">password:conn</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">connection2</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">url:r2dbc:h2:mem:///demo</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">username:conn</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">password:conn</span>
+</span></span></code></pre></div><h2 id="connection-factories">Connection Factories</h2>
+<p>Using the above <code>ConfigurationProperties</code> you can now build a <code>@Configuration</code> class.
+This configuration enables <code>R2DBCConfigurationProperties</code>.
+Unfortunately these properties cannot be used directly to create a new <code>ConnectionFactory</code> instance.
+For this webflux-recipes repository provides the <code>R2DBCConfigurationProperties.buildConnectionFactoryOptions</code> method.
+This creates a <code>ConnectionFactoryOptions.Builder</code> instance and applies the properties to it.
+Now it is possible to create a <code>ConnectionFactory</code> using the <code>ConnectionFactoryBuilder</code>.
+The builder is initialized with options derived from the properties.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Configuration</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@EnableConfigurationProperties</span>(R2DBCConfigurationProperties.<span style="color:#a6e22e">class</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">R2DBCConfiguration</span> <span style="color:#66d9ef">extends</span> R2DBCConfigurationProperties {
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Bean</span>
+</span></span><span style="display:flex;"><span>    ConnectionFactory <span style="color:#a6e22e">connection1Factory</span>(R2DBCConfigurationProperties properties) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> ConnectionFactoryBuilder
+</span></span><span style="display:flex;"><span>            .<span style="color:#a6e22e">withOptions</span>(R2DBCConfigurationProperties.<span style="color:#a6e22e">buildConnectionFactoryOptions</span>(properties.<span style="color:#a6e22e">getOptions</span>().<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#34;connection1&#34;</span>))
+</span></span><span style="display:flex;"><span>        ).<span style="color:#a6e22e">build</span>();
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="r2dbc-repositories-and-multiple-connection-factories">R2DBC repositories and multiple connection factories</h2>
+<p>Now that we have multiple properties available how to assign these to a specific <code>ReactiveCrudRepositiory</code> interface.</p>
+<p>To make it short. This is not possible. The longer version. At least not directly.</p>
+<h3 id="enabler2dbcrepositories">EnableR2dbcRepositories</h3>
+<p>Repositories are enabled with the <code>@EnableR2dbcRepositories</code> annotation.
+As stated in the documentation (<a href="https://docs.spring.io/spring-data/relational/reference/r2dbc/repositories.html">https://docs.spring.io/spring-data/relational/reference/r2dbc/repositories.html</a>) repositories require an <code>R2dbcEntityOperations</code> class instance.</p>
+<h3 id="default-r2dbcentityoperations">Default <code>R2dbcEntityOperations</code></h3>
+<p>The default configuration is expecting exactly one <code>ConnnectionFactory</code> bean and creates a <code>R2dbcEntityOperations</code> instance and scans the entire application class path for <code>ReactiveCrudRepository</code> definitions.</p>
+<h3 id="custom-r2dbcentityoperations">Custom <code>R2dbcEntityOperations</code></h3>
+<p>Actually we want to use multiple <code>ConnectionFactory</code> instances.
+To be able to do this we need to customize the <code>@EnableR2dbcRepositories</code>.
+First we add the parameter <code>basePackages</code>. Here we can add one or more base package paths that are scanned for repositories.
+The second parameter <code>entityOperationsRef</code> takes the bean name of <code>R2dbcEntityOperations</code> instance to used to back the identified repositories.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Configuration</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@EnableR2dbcRepositories</span>(basePackages <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;io.github.d_sch.connection1&#34;</span>, entityOperationsRef <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;connection1R2dbcEntityOperations&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Connection1FactoryConfiguration</span> {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Bean</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> R2dbcEntityOperations <span style="color:#a6e22e">mysqlR2dbcEntityOperations</span>(<span style="color:#a6e22e">@Qualifier</span>(<span style="color:#e6db74">&#34;connection1Factory&#34;</span>) ConnectionFactory connectionFactory) {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        DatabaseClient databaseClient <span style="color:#f92672">=</span> DatabaseClient.<span style="color:#a6e22e">create</span>(connectionFactory);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> R2dbcEntityTemplate(databaseClient, MySqlDialect.<span style="color:#a6e22e">INSTANCE</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>As I promised above. It is not possible target single repositories. But it is possible to add multiple package paths containing single repositories.</p>
+<h2 id="wrapping-up">Wrapping up</h2>
+<p>Hope this post was interesting, if you have any concerns or questions please create an issue</p>
+<ul>
+<li>using R2DBC instead of JDBC requires some substantial application changes.</li>
+<li>there is no out of the box support in Spring Data or Spring Boot to access multiple data sources.</li>
+</ul>
+<p>You can find the full source code in my git repository: (<a href="https://github.com/d-sch/webflux-recipes">https://github.com/d-sch/webflux-recipes</a>)</p>
+
+  </div>
+  
+  <div>
+    <div>Tags:</div>
+    <ul>
+        <li><a href="/tags/springboot/">springboot</a></li>
+    </ul>
+  </div>
+
+  </div>
+
+    </div>
+  </main>
+  <footer>
+    <div class="container">
+  <div class="d-flex justify-content-between align-items-center bg-dark">
+    <div class="col-md-4 text-right text-white">Copyright d-sch 2023.<br>All rights reserved.</div>
+    <nav class="navbar navbar-expand-lg navbar-light bg-primary">
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        
+    <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+    <li class="nav-item">
+      <a class="nav-link" href="/footer/about/">About
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/footer/legal/">Legal
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/footer/privacy/">Privacy
+      </a>
+    </li>
+    </ul>
+
+      </div>  
+    </nav>
+  </div>
+</div>
+
+
+
+
+
+<script src="/js/bundle.min.js" defer></script>
+
+
+  </footer>
+</body>
+</html>

@@ -1,5 +1,13 @@
 {
     "[markdown]": {
     },
-    "search.useIgnoreFiles": false
+    "search.useIgnoreFiles": false,
+    "spellright.language": [
+        "en_US"
+    ],
+    "spellright.documentTypes": [
+        "latex",
+        "plaintext",
+        "markdown"
+    ]
 }

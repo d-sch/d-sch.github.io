@@ -1,12 +1,18 @@
 ---
-date: "2023-01-15T09:00:00-07:00"
+date: "2023-11-26T00:00:00"
 draft: false
 tags:
-- red
-title: Multiple r2dbc database connection projects
+- springboot
+title: Enable multiple R2DBC database connection factories
 ---
-While porting an existing project to Spring WebFlux we found a limititation in the current Spring Boot
-r2dbc configuration.
+Migrating an existing project to Spring WebFlux requires quite some effort.
+You have to touch the entire configurations. 
+If you work incrementally you will find most parts of an WebFlux application are implemented fast and easy.
+But if you dig deeper into the application requirements things can become interesting.
+
+While working on the database access layer and migrating from JDBC to R2DBC I found one of this interesting challenges.
+
+Starting small and followed first the documentation.
 
 From the reference documentation: (https://docs.spring.io/spring-boot/docs/current/reference/html/data.html#data.sql.r2dbc)
 >`ConnectionFactory` configuration is controlled by external configuration properties in `spring.r2dbc.*`.
@@ -21,13 +27,13 @@ From the reference documentation: (https://docs.spring.io/spring-boot/docs/curre
 {.blockqoute}
 
 The refactoring from JDBC to R2DBC for the first database connection was done easily:
-- adding the r2dbc config to the application.yaml file
+- adding the R2DBC config to the application.yaml file
 - create repository interface for entity class
-- getting the `DatabaseClient` for the connection
+- Adding the `@EnableR2dbcRepositories` annotation to the application class
 - using the default repository methods for lookup by id
-- adding `@query` annotations with SQL code
+- adding `@query` annotations using complex SQL queries
 
-But after that there was a big questionmark how to add a second connection.
+But after that there was a big question mark how to add a second connection.
 
 This information is not available in the Spring Boot documentation.
 You have to go to the Spring Data R2DBC documentation.
@@ -35,7 +41,7 @@ There you are told that you
 >**...need to define a few beans yourself to configure Spring Data R2DBC to work with multiple databases.**
 {.blockqoute}
 
-***Please note that I use the current verion Spring Data is 2.0 (as of November 2023) as reference.***
+***Please note that I use the current version Spring Data is 2.0 (as of November 2023) as reference.***
 
 ## Multiple Connection Properties
 Multiple connection properties from the application properties is currently not supported out the box by Spring Boot.
@@ -43,8 +49,8 @@ Multiple connection properties from the application properties is currently not 
 https://docs.spring.io/spring-boot/docs/3.2.0/api/org/springframework/boot/autoconfigure/r2dbc/R2dbcProperties.html
 These are the default `@ConfigurationProperties` used by the Spring Boot auto configuration.
 
-Based on these I generated a new custom `@ConfigurationProperties`
-These simply expects a keyed set of `import org.springframework.boot.autoconfigure.r2dbc.R2dbcProperties.R2dbcProperties`.
+Based on this class I generated a new custom `@ConfigurationProperties` class.
+This simply expects a keyed set of `import org.springframework.boot.autoconfigure.r2dbc.R2dbcProperties.R2dbcProperties` in the application configuration.
 
 ```java
 @ConfigurationProperties(prefix = "r2dbc")
@@ -105,7 +111,7 @@ To make it short. This is not possible. The longer version. At least not directl
 
 ### EnableR2dbcRepositories
 Repositories are enabled with the `@EnableR2dbcRepositories` annotation.
-As statet in the documentation (https://docs.spring.io/spring-data/relational/reference/r2dbc/repositories.html) repositories require an `R2dbcEntityOperations` class instance.
+As stated in the documentation (https://docs.spring.io/spring-data/relational/reference/r2dbc/repositories.html) repositories require an `R2dbcEntityOperations` class instance.
 
 ### Default `R2dbcEntityOperations`
 The default configuration is expecting exactly one `ConnnectionFactory` bean and creates a `R2dbcEntityOperations` instance and scans the entire application class path for `ReactiveCrudRepository` definitions.
@@ -113,7 +119,7 @@ The default configuration is expecting exactly one `ConnnectionFactory` bean and
 ### Custom `R2dbcEntityOperations`
 Actually we want to use multiple `ConnectionFactory` instances.
 To be able to do this we need to customize the `@EnableR2dbcRepositories`.
-First we add the paramter `basePackages`. Here we can add one or more base package paths that are scanned for repositories.
+First we add the parameter `basePackages`. Here we can add one or more base package paths that are scanned for repositories.
 The second parameter `entityOperationsRef` takes the bean name of `R2dbcEntityOperations` instance to used to back the identified repositories.
 
 ```java
@@ -134,6 +140,9 @@ static class Connection1FactoryConfiguration {
 As I promised above. It is not possible target single repositories. But it is possible to add multiple package paths containing single repositories.
 
 ## Wrapping up
-Using R2DBC requires some substantial changes. There is no out of the box support in Spring Data or Spring Boot to access multiple data sources.
+Hope this post was interesting, if you have any concerns or questions please create an issue 
+- using R2DBC instead of JDBC requires some substantial application changes.
+- there is no out of the box support in Spring Data or Spring Boot to access multiple data sources.
 
-You can find the full source code in my git repository: (https://github.com/d-sch/webflux-receipts)
+
+You can find the full source code in my git repository: (https://github.com/d-sch/webflux-recipes)
