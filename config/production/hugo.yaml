@@ -1,2 +1,2 @@
-publishDir: public_production
+publishDir: docs
 buildDrafts: false
