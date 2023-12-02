@@ -1,0 +1,17 @@
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center bg-dark">
+    <div class="col-md-4 text-right text-white">Copyright d-sch {{ now.Year }}.<br>All rights reserved.</div>
+    <nav class="navbar navbar-expand-lg navbar-light bg-primary">
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        {{ partial "menu.html" (dict "menuID" "footer" "page" .) }}
+      </div>  
+    </nav>
+  </div>
+</div>
+<!-- JavaScript and dependencies -->
+
+{{ $bootstrap := resources.Get "js/bootstrap.bundle.js" }}
+{{ $js := slice $bootstrap | resources.Concat "js/bundle.js" | resources.Minify }}
+
+<script src="{{$js.RelPermalink}}" defer></script>
+

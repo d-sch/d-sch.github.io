@@ -1,0 +1,50 @@
+body {
+    font-size: 1.2rem;
+}
+
+.nav-item.active {
+    font-weight: bold;
+}
+
+.nav-item.disabled {
+    font-weight: lighter;
+}
+
+.blockqoute {
+    border-left: 10px solid #8080FF;
+    quotes: "“" "“" "‘ " "‘";
+
+    &::before {
+        font-size: 2em;
+        content: open-quote;
+    }
+
+    &::after {
+        font-size: 2em;
+        content: close-quote;
+    }
+
+    & > * {
+        margin-left: 10px;
+    }
+
+    & > p {    
+        text-indent: -0.50em;
+        font-style: italic;
+    }
+}
+
+.blockqoute-footer {
+    border-left: 10px solid #dddddd;
+    text-indent: -0.45em;
+    margin-left: 40px;
+    quotes: "„" "“" "‚" "‘";
+
+    &::before {
+        content: open-quote;
+    }
+
+    &::after {
+        content: close-quote;
+    }
+}

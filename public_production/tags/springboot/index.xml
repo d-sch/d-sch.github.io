@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>springboot on d-sch pages</title>
+    <link>https://d-sch.github.io/tags/springboot/</link>
+    <description>Recent content in springboot on d-sch pages</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 26 Nov 2023 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://d-sch.github.io/tags/springboot/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Enable multiple R2DBC database connection factories</title>
+      <link>https://d-sch.github.io/posts/enable-multiple-r2dcb-connection-factories/</link>
+      <pubDate>Sun, 26 Nov 2023 00:00:00 +0000</pubDate>
+      <guid>https://d-sch.github.io/posts/enable-multiple-r2dcb-connection-factories/</guid>
+      <description>Migrating an existing project to Spring WebFlux requires quite some effort. You have to touch the entire configurations. If you work incrementally you will find most parts of an WebFlux application are implemented fast and easy. But if you dig deeper into the application requirements things can become interesting.
+While working on the database access layer and migrating from JDBC to R2DBC I found one of this interesting challenges.
+Starting small and followed first the documentation.</description>
+    </item>
+  </channel>
+</rss>
