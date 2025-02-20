@@ -3,7 +3,7 @@ title: Terraform Structuring Lessons
 description: ""
 date: 2025-02-02T18:57:01.827Z
 preview: ""
-draft: true
+draft: false
 tags: [terraform]
 categories: [IaC]
 ---
