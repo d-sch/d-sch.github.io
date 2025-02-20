@@ -3,7 +3,8 @@
     },
     "search.useIgnoreFiles": false,
     "spellright.language": [
-        "en_US"
+        "de",
+        "en"
     ],
     "spellright.documentTypes": [
         "latex",
