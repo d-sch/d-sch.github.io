@@ -4,10 +4,9 @@ description: ""
 date: 2025-02-02T18:57:01.827Z
 preview: ""
 draft: false
-tags: [terraform]
+tags: [terraform,opentofu]
 categories: [IaC]
 ---
-# Overview
 Working with Terraform takes some time to get comfortable with. One of the greatest myths in all the examples is the `main.tf`. Starting a new infrastructure it can make sense to begin with one file an put all resources in there. But after reaching several pages in editor things can easily go down hill from there.
 
 I want to share some lessons learned after taking over larger applications infrastructure project without being able to reach the initial author.
