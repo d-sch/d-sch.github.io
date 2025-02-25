@@ -2,7 +2,11 @@
     "name": "Dev Container",
     "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
     "features": {
-        "ghcr.io/devcontainers/features/hugo:1": {}
+        "ghcr.io/devcontainers/features/hugo:1": {
+            "extended": true
+        },
+        "ghcr.io/devcontainers/features/node:1": {},
+        "./dart-sass": {}
     },
     "customizations": {
         "vscode": {
