@@ -1,0 +1,22 @@
+{
+    "name": "dart-sass",
+    "id": "dart-sass",
+    "version": "1.0.0",
+    "description": "Install dart-sass",
+    "options": {
+        "version": {
+            "type": "string",
+            "proposals": [
+                "1.85.1"
+            ],
+            "default": "1.85.1",
+            "description": "Select a pre-made greeting, or enter your own"
+        }
+    },
+    "containerEnv": {
+        "PATH": "/opt/dart-sass:${PATH}"
+    },
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/common-utils"
+    ]
+}

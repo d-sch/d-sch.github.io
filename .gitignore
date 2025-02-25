@@ -5,3 +5,4 @@ resources/
 go.mod
 go.sum
 resources/_gen/
+docs/
