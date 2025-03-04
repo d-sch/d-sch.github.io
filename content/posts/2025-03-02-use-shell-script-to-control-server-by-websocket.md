@@ -61,9 +61,9 @@ To solve this problem I used a docker image and started a container on my machin
 
 This solves how to connection reliable to a Minecraft server running in an background process. If the Docker host demon is available via network (don't do that without setting up security) one could manage the server by connecting to the Docker host from a remote machine.
 
-But still you need some Docker client on the remote machine. But that requires some setup and that was something I tried to avoid. Somehow you should be able to connect to the Minecraft server directly.
+But you still need some Docker client on the remote machine. That requires some setup and this was something I tried to avoid. Somehow you should be able to connect to the Minecraft server directly by network.
 
-I remembered that I have used `nc` NCat before to forward an private MySQL server via `ssh` to my local machine. So I dwelled into the manual again...
+I remembered that I have used NCat `nc` before to forward an private MySQL server via `ssh` to my local machine. So I dwelled into the manual again...
 
 # Ncat
 >From the user guide (https://nmap.org/ncat/guide/index.html)
@@ -75,13 +75,21 @@ Ncat in the listen mode is registering a network socket and waits for a network 
 
 For example `nc -l 8080` is waiting for an connection on TCP binding to port 8080 on all locally available network interface.
 
-Ncat reads to send from `stdin` and retrieves to write to `stdout` from the network. This way you can forward the the `stdin` and `stdout` from every application.
+Ncat reads from `stdin` to send and write to `stdout` what was received from the network. This way you can forward the the `stdin` and `stdout` of every application to a network socket.
 
-For Example ``nc -l 8080 --sh-exec "echo `pwd`"``
+For Example :
+```bash
+$nc -l 8080 --sh-exec "echo `test`" &
+&nc localhost 8080
+test
+```
 
-But this doesn't work for the Minecraft server. I want to start the server. Serving sessions to the Minecraft world for connecting players. This must not rely on that somebody is connecting to the server console.
+But this doesn't work for the Minecraft server. I want to start the server. Serving sessions to the Minecraft world for players connecting. This must not rely on that somebody is connecting to the server console.
 
-Somehow it should be possible to get the Minecraft server `stdin` and `stdout` to execute nc similar to this command (not working) `nc -l 8080 --keep-open > mc_in < mc_out`.
+Somehow it should be possible to get the Minecraft server `stdin` and `stdout` and to connect these to NCat similar to this command (not working):
+```bash
+nc -l 8080 --keep-open > mc_in < mc_out
+```
 
 That put me back again digging into documentations and found...
 
@@ -132,17 +140,17 @@ mkfifo mc-out
 
 Next start the Minecraft server:
 ```bash
-./mc >mc-out <mc-in &
+$./mc > mc-out < mc-in &
 ```
 
 Now start Ncat:
 ```bash
-nc -vlk 49999 >mc-in <mc-out &
+nc -vlk 49999 > mc-in < mc-out &
 ```
 
 After that you can connect to the listening Ncat process with:
 ```bash
-nc localhost 49999
+$nc localhost 49999
 onmessage NO LOG FILE! - setting up server logging... 
 ...
 ```
@@ -167,17 +175,18 @@ and passing messages between programs and web-browser.\
 {.blockqoute}
 
 That sounds interesting. Essentially it:
-- creates a new instance of a process on each WebSocket connection
-- sends everything read from `stdout` to the client 
+- creates a new instance of an application on each incoming WebSocket connection
+- sends everything read from process `stdout` to the client 
 - reads everthing retrieved from the client to `stdin` of the process
 - finally it stops the process after the connection is closed
 
-That sounds a lot like what I need for my Minecraft server. Beside please don't start a process for each connection...
+That sounds a lot like what I need for my Minecraft server. Beside please don't start a Minecraft server for each connection...
 
 # Providing a WebSocket Minecraft console
 Up until now we had a TCP listener waiting for connections and connect to the `stdin` and `stdout` of the Minecraft server (via named pipes). 
 
-All we need is that websocketd is connecting to the `stdin` and `stdout` of an Ncat that connect by network to the listening Ncat:
+All we need now is that websocketd is connecting to the `stdin` and `stdout` of an Ncat configured to connect over the network to the listening Ncat:
+
 ```bash
 websocketd --port=8080 nc localhost 49999
 ```
