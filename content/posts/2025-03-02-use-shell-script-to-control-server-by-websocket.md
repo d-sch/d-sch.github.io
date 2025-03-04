@@ -194,6 +194,8 @@ Adding `--devconsole` and you don't even have to build a Html page to test the W
 
 Just browse to `https://localhost:8080` (Or the network address, machine name or DNS entry) and you will see a page asking to connect to `ws://localhost:8080`. 
 
+![alt](server-connected-by-websocket.png)
+
 Doing so you will see the output of the Minecraft server.
 
 # Final words
