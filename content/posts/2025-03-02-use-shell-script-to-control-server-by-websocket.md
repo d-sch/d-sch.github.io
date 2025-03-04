@@ -186,7 +186,6 @@ That sounds a lot like what I need for my Minecraft server. Beside please don't 
 Up until now we had a TCP listener waiting for connections and connect to the `stdin` and `stdout` of the Minecraft server (via named pipes). 
 
 All we need now is that websocketd is connecting to the `stdin` and `stdout` of an Ncat configured to connect over the network to the listening Ncat:
-
 ```bash
 websocketd --port=8080 nc localhost 49999
 ```
