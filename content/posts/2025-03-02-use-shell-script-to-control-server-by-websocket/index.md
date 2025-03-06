@@ -1,5 +1,5 @@
 ---
-title: Use Shellskript To Control Server By Websocket
+title: Use Shell Script To Control Server By Websocket
 description: ""
 date: 2025-03-02T19:05:20.745Z
 preview: ""
