@@ -199,6 +199,6 @@ Just browse to `https://localhost:8080` (Or the network address, machine name or
 Doing so you will see the output of the Minecraft server.
 
 # Final words
-My final implementation can be found on Github (https://github.com/d-sch/ws-minecraft-bedrock-server).
+My final implementation can be found on [Github](https://github.com/d-sch/ws-minecraft-bedrock-server).
 
 I hope this exercise is providing value. I found getting along without falling back to coding and simply stick to others command line applications was fun and inspiring. 
